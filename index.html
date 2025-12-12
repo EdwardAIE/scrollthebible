@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bible Scroll</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #111;
+      color: #f5f5f5;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    body.light-mode {
+      background: #f2f2f2;
+      color: #111;
+    }
+
+    body.light-mode .card {
+      background: #ffffff;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    body.light-mode .pill-dot {
+      background: #111;
+    }
+
+    body.light-mode .load-more-hint {
+      opacity: 0.7;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 600px;
+      min-height: 100vh;
+      padding: 16px 12px 24px;
+    }
+
+    header {
+      text-align: center;
+      padding: 8px 0 12px;
+      opacity: 0.9;
+    }
+
+    header h1 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    header p {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 2px;
+    }
+
+    .header-options {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.8rem;
+    }
+
+    .filter-toggle {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      color: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      opacity: 0.9;
+      cursor: pointer;
+    }
+
+    .version-select {
+      background: #181818;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.25);
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      color: inherit;
+      outline: none;
+    }
+
+    body.light-mode .filter-toggle {
+      border-color: rgba(0,0,0,0.2);
+    }
+
+    body.light-mode .version-select {
+      border-color: rgba(0,0,0,0.2);
+      background: #f2f2f2;
+      color: #111;
+    }
+
+    .filter-toggle:active {
+      transform: scale(0.97);
+    }
+
+    .filter-wrapper {
+      margin-top: 8px;
+      font-size: 0.8rem;
+    }
+
+    .book-filter {
+      margin-top: 6px;
+      padding: 8px 8px 4px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.04);
+      display: none;
+      text-align: left;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    body.light-mode .book-filter {
+      background: rgba(0,0,0,0.04);
+    }
+
+    .book-filter.open {
+      display: block;
+    }
+
+    .filter-actions {
+      display: flex;
+      justify-content: flex-start;
+      gap: 8px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+
+    .filter-actions button {
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: transparent;
+      color: inherit;
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      cursor: pointer;
+    }
+
+    body.light-mode .filter-actions button {
+      border-color: rgba(0,0,0,0.2);
+    }
+
+    .filter-actions button:active {
+      transform: scale(0.97);
+    }
+
+    .book-filter-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 10px;
+    }
+
+    .book-checkbox-label {
+      font-size: 0.75rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.18);
+      white-space: nowrap;
+    }
+
+    body.light-mode .book-checkbox-label {
+      border-color: rgba(0,0,0,0.15);
+    }
+
+    .book-checkbox-label input {
+      transform: scale(0.9);
+      accent-color: #111;
+    }
+
+    body.light-mode .book-checkbox-label input {
+      accent-color: #111;
+    }
+
+    .cards {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 8px;
+      padding-bottom: 40px;
+    }
+
+    .card {
+      background: #181818;
+      border-radius: 16px;
+      padding: 18px 16px 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+    }
+
+    .chapter-header {
+      margin-bottom: 10px;
+    }
+
+    .book-name {
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      opacity: 0.85;
+    }
+
+    .chapter-number {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .chapter-content {
+      margin-top: 10px;
+    }
+
+    .verse {
+      margin-bottom: 10px;
+      line-height: 1.5;
+      font-size: 1rem;
+    }
+
+    .verse-number {
+      font-size: 0.72rem;
+      opacity: 0.7;
+      margin-right: 6px;
+      vertical-align: super;
+    }
+
+    /* muted verses around main verse */
+    .verse-muted {
+      color: rgba(245,245,245,0.5);
+    }
+
+    body.light-mode .verse-muted {
+      color: rgba(0,0,0,0.40);
+    }
+
+    .bottom-hint {
+      text-align: center;
+      font-size: 0.8rem;
+      opacity: 0.7;
+      padding-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.15);
+      padding: 3px 8px;
+      font-size: 0.7rem;
+      margin-top: 4px;
+      opacity: 0.85;
+      gap: 4px;
+    }
+
+    body.light-mode .pill {
+      border-color: rgba(0,0,0,0.15);
+    }
+
+    .pill-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #f5f5f5;
+      margin-right: 4px;
+    }
+
+    .pill-button {
+      border: none;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .pill-button[disabled] {
+      opacity: 0.6;
+      cursor: default;
+    }
+
+    .load-more-hint {
+      text-align: center;
+      font-size: 0.75rem;
+      opacity: 0.6;
+      padding: 10px 0 30px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1 id="headerTitle">Bible Scroll</h1>
+      <p>Scroll down to see random verses or chapters.</p>
+
+      <div class="header-options">
+        <button type="button" id="lightModeButton" class="filter-toggle">
+          Toggle light mode
+        </button>
+        <button type="button" id="modeToggleButton" class="filter-toggle">
+          Switch to Random Chapters
+        </button>
+        <select id="versionSelect" class="version-select">
+          <option value="ESV">ESV</option>
+          <option value="KJV">KJV</option>
+          <option value="NASB">NASB</option>
+          <option value="NET">NET</option>
+          <option value="NIV">NIV</option>
+          <option value="NKJV">NKJV</option>
+        </select>
+        <button id="filterToggle" class="filter-toggle">
+          Book filter ▾
+        </button>
+      </div>
+
+      <div class="filter-wrapper">
+        <div id="bookFilter" class="book-filter">
+          <div class="filter-actions">
+            <button type="button" id="selectAllBtn">Select all</button>
+            <button type="button" id="selectNoneBtn">Select none</button>
+            <button type="button" id="ntOnlyButton" class="nt-button">
+              New Testament only
+            </button>
+          </div>
+          <div class="book-filter-grid" id="bookFilterGrid">
+            <!-- checkboxes tạo bằng JS -->
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div id="cardsContainer" class="cards">
+      <!-- Cards will be added here -->
+    </div>
+
+    <div class="load-more-hint" id="loadMoreHint">
+      Keep scrolling to load more...
+    </div>
+  </div>
+
+  <script type="module">
+    // Version JSON endpoints
+    const versionUrls = {
+      ESV: "https://raw.githubusercontent.com/jadenzaleski/bible-translations/master/ESV/ESV_bible.json",
+      KJV: "https://raw.githubusercontent.com/jadenzaleski/bible-translations/master/KJV/KJV_bible.json",
+      NASB: "https://raw.githubusercontent.com/jadenzaleski/bible-translations/master/NASB/NASB_bible.json",
+      NET: "https://raw.githubusercontent.com/jadenzaleski/bible-translations/master/NET/NET_bible.json",
+      NIV: "https://raw.githubusercontent.com/jadenzaleski/bible-translations/master/NIV/NIV_bible.json",
+      NKJV: "https://raw.githubusercontent.com/jadenzaleski/bible-translations/master/NKJV/NKJV_bible.json"
+    };
+
+    function getSavedVersion() {
+      const saved = localStorage.getItem("bibleVersion");
+      return saved || "NIV";
+    }
+
+    let bibleData = {};
+    let allBooks = [];
+    let selectedBooks = [];
+    let currentVersion = getSavedVersion();
+
+    /*
+    THIS bibleData JSON THAT IS BEING FETCHED WILL HAVE THE FOLLOWING FORMAT:
+    
+      "Genesis": {
+        "1": {
+          "1": "In the beginning God created the heavens and the earth.",
+          "2": "Now the earth was formless and empty, darkness was over the surface of the deep, and the Spirit of God was hovering over the waters.",
+          "3": "And God said, “Let there be light,” and there was light."
+        },
+        "2": {
+          "1": "Thus the heavens and the earth were completed in all their vast array.",
+          "2": "By the seventh day God had finished the work he had been doing; so on the seventh day he rested from all his work.",
+          "3": "Then God blessed the seventh day and made it holy, because on it he rested from all the work of creating that he had done."
+        }
+      },
+      "Exodus": {
+        "1": {
+          "1": "These are the names of the sons of Israel who went to Egypt with Jacob, each with his family:",
+          "2": "Reuben, Simeon, Levi and Judah;",
+          "3": "Issachar, Zebulun and Benjamin;"
+        }
+      }
+    };*/
+
+    const cardsContainer = document.getElementById("cardsContainer");
+    const lightModeButton = document.getElementById("lightModeButton");
+    const modeToggleButton = document.getElementById("modeToggleButton");
+    const ntOnlyButton = document.getElementById("ntOnlyButton");
+    const filterToggle = document.getElementById("filterToggle");
+    const bookFilter = document.getElementById("bookFilter");
+    const bookFilterGrid = document.getElementById("bookFilterGrid");
+    const selectAllBtn = document.getElementById("selectAllBtn");
+    const selectNoneBtn = document.getElementById("selectNoneBtn");
+
+    let lastChapterKey = null;
+    let lastVerseKey = null;
+    let isLoading = false;
+
+    // mode: "verses" hoặc "chapters"
+    let mode = localStorage.getItem("mode") === "chapters" ? "chapters" : "verses";
+
+    // Always start at top on refresh
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
+
+    window.addEventListener("load", () => {
+      window.scrollTo(0, 0);
+    });
+
+    const newTestamentBooks = [
+      "Matthew","Mark","Luke","John","Acts","Romans",
+      "1 Corinthians","2 Corinthians","Galatians","Ephesians",
+      "Philippians","Colossians","1 Thessalonians","2 Thessalonians",
+      "1 Timothy","2 Timothy","Titus","Philemon","Hebrews","James",
+      "1 Peter","2 Peter","1 John","2 John","3 John","Jude","Revelation"
+    ];
+
+    async function loadBibleData(version) {
+      const versionKey = version in versionUrls ? version : "NIV";
+      const url = versionUrls[versionKey];
+      currentVersion = versionKey;
+      const response = await fetch(url);
+      bibleData = await response.json();
+      allBooks = Object.keys(bibleData);
+      selectedBooks = [...allBooks];
+    }
+
+    function saveSelectedBooks() {
+      localStorage.setItem("selectedBooks", JSON.stringify(selectedBooks));
+    }
+
+    function buildBookFilterUI() {
+      bookFilterGrid.innerHTML = "";
+      allBooks.forEach(book => {
+        const label = document.createElement("label");
+        label.className = "book-checkbox-label";
+
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.dataset.book = book;
+        cb.checked = true;
+
+        cb.addEventListener("change", () => {
+          updateSelectedBooksFromUI();
+        });
+
+        label.appendChild(cb);
+        label.appendChild(document.createTextNode(book));
+        bookFilterGrid.appendChild(label);
+      });
+    }
+
+    function updateSelectedBooksFromUI() {
+      const checkboxes = bookFilterGrid.querySelectorAll("input[type='checkbox']");
+      const chosen = [];
+      checkboxes.forEach(cb => {
+        if (cb.checked) {
+          chosen.push(cb.dataset.book);
+        }
+      });
+      selectedBooks = chosen;
+      saveSelectedBooks();
+    }
+
+    function setBookSelection(booksToSelect) {
+      const checkboxes = bookFilterGrid.querySelectorAll("input[type='checkbox']");
+      checkboxes.forEach(cb => {
+        const bookName = cb.dataset.book;
+        cb.checked = booksToSelect.includes(bookName);
+      });
+      updateSelectedBooksFromUI();
+    }
+
+    // --- RANDOM CHAPTER FUNCTIONS ---
+
+    function getRandomChapterFromBooks(booksArray) {
+      if (!booksArray || booksArray.length === 0) return null;
+      const randomBook = booksArray[Math.floor(Math.random() * booksArray.length)];
+      const chapters = Object.keys(bibleData[randomBook]);
+      if (!chapters.length) return null;
+      const randomChapter = chapters[Math.floor(Math.random() * chapters.length)];
+      return { book: randomBook, chapter: randomChapter };
+    }
+
+    function getRandomChapterNonRepeating() {
+      let selection = getRandomChapterFromBooks(selectedBooks);
+      if (!selection) return null;
+
+      let tryCount = 0;
+      while (
+        lastChapterKey &&
+        `${selection.book}:${selection.chapter}` === lastChapterKey &&
+        tryCount < 5
+      ) {
+        selection = getRandomChapterFromBooks(selectedBooks);
+        if (!selection) break;
+        tryCount++;
+      }
+
+      if (!selection) return null;
+
+      lastChapterKey = `${selection.book}:${selection.chapter}`;
+      return selection;
+    }
+
+    function appendRandomChapterCard() {
+      const selection = getRandomChapterNonRepeating();
+      if (!selection) return;
+
+      const { book, chapter } = selection;
+      const verses = bibleData[book][chapter];
+
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const header = document.createElement("div");
+      header.className = "chapter-header";
+
+      const bookNameEl = document.createElement("div");
+      bookNameEl.className = "book-name";
+      bookNameEl.textContent = book;
+
+      const chapterNumberEl = document.createElement("div");
+      chapterNumberEl.className = "chapter-number";
+      chapterNumberEl.textContent = chapter;
+
+      header.appendChild(bookNameEl);
+      header.appendChild(chapterNumberEl);
+
+      const content = document.createElement("div");
+      content.className = "chapter-content";
+
+      const verseNumbers = Object.keys(verses).sort((a, b) => Number(a) - Number(b));
+      verseNumbers.forEach(num => {
+        const p = document.createElement("p");
+        p.className = "verse";
+
+        const sup = document.createElement("span");
+        sup.className = "verse-number";
+        sup.textContent = num;
+
+        const textNode = document.createTextNode(verses[num]);
+
+        p.appendChild(sup);
+        p.appendChild(textNode);
+        content.appendChild(p);
+      });
+
+      const bottomHint = document.createElement("div");
+      bottomHint.className = "bottom-hint";
+      bottomHint.innerHTML = `
+        <div class="pill">
+          <div class="pill-dot"></div>
+          Scroll down for another random chapter
+        </div>
+        <div class="pill">${currentVersion}</div>
+      `;
+
+      card.appendChild(header);
+      card.appendChild(content);
+      card.appendChild(bottomHint);
+
+      cardsContainer.appendChild(card);
+    }
+
+    // --- RANDOM VERSE FUNCTIONS ---
+
+    function getRandomVerseFromBooks(booksArray) {
+      if (!booksArray || booksArray.length === 0) return null;
+
+      const randomBook = booksArray[Math.floor(Math.random() * booksArray.length)];
+      const chapters = Object.keys(bibleData[randomBook]);
+      if (!chapters.length) return null;
+
+      const randomChapter = chapters[Math.floor(Math.random() * chapters.length)];
+      const versesObj = bibleData[randomBook][randomChapter];
+      const verseNumbers = Object.keys(versesObj);
+      if (!verseNumbers.length) return null;
+
+      const randomVerseNumber = verseNumbers[Math.floor(Math.random() * verseNumbers.length)];
+      const verseText = versesObj[randomVerseNumber];
+
+      return {
+        book: randomBook,
+        chapter: randomChapter,
+        verseNumber: randomVerseNumber,
+        verseText: verseText
+      };
+    }
+
+    function getRandomVerseNonRepeating() {
+      let selection = getRandomVerseFromBooks(selectedBooks);
+      if (!selection) return null;
+
+      let tryCount = 0;
+      while (
+        lastVerseKey &&
+        `${selection.book}:${selection.chapter}:${selection.verseNumber}` === lastVerseKey &&
+        tryCount < 5
+      ) {
+        selection = getRandomVerseFromBooks(selectedBooks);
+        if (!selection) break;
+        tryCount++;
+      }
+
+      if (!selection) return null;
+
+      lastVerseKey = `${selection.book}:${selection.chapter}:${selection.verseNumber}`;
+      return selection;
+    }
+
+    // show full chapter inside verse card
+    function expandVerseCardToChapter(card, selection) {
+      const { book, chapter, verseNumber } = selection;
+      const verses = bibleData[book][chapter];
+      if (!verses) return;
+
+      const content = card.querySelector(".chapter-content");
+      if (!content) return;
+
+      content.innerHTML = "";
+
+      const verseNumbers = Object.keys(verses).sort((a, b) => Number(a) - Number(b));
+      verseNumbers.forEach(num => {
+        const p = document.createElement("p");
+        p.className = "verse";
+
+        if (num !== String(verseNumber)) {
+          p.classList.add("verse-muted");
+        }
+
+        const sup = document.createElement("span");
+        sup.className = "verse-number";
+        sup.textContent = num;
+
+        const textNode = document.createTextNode(verses[num]);
+
+        p.appendChild(sup);
+        p.appendChild(textNode);
+        content.appendChild(p);
+      });
+    }
+
+    function appendRandomVerseCard() {
+      const selection = getRandomVerseNonRepeating();
+      if (!selection) return;
+
+      const { book, chapter, verseNumber, verseText } = selection;
+
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const header = document.createElement("div");
+      header.className = "chapter-header";
+
+      const bookNameEl = document.createElement("div");
+      bookNameEl.className = "book-name";
+      bookNameEl.textContent = book;
+
+      const refEl = document.createElement("div");
+      refEl.className = "chapter-number";
+      refEl.textContent = `${chapter}:${verseNumber}`;
+
+      header.appendChild(bookNameEl);
+      header.appendChild(refEl);
+
+      const content = document.createElement("div");
+      content.className = "chapter-content";
+
+      const p = document.createElement("p");
+      p.className = "verse";
+
+      const sup = document.createElement("span");
+      sup.className = "verse-number";
+      sup.textContent = verseNumber;
+
+      const textNode = document.createTextNode(verseText);
+
+      p.appendChild(sup);
+      p.appendChild(textNode);
+      content.appendChild(p);
+
+      const bottomHint = document.createElement("div");
+      bottomHint.className = "bottom-hint";
+      bottomHint.innerHTML = `
+        <div class="pill">
+          <div class="pill-dot"></div>
+          Scroll down for another random verse
+        </div>
+        <div class="pill">${currentVersion}</div>
+        <div class="pill">
+          <button class="pill-button show-chapter-button" type="button">
+            Show chapter
+          </button>
+        </div>
+      `;
+
+      card.appendChild(header);
+      card.appendChild(content);
+      card.appendChild(bottomHint);
+
+      cardsContainer.appendChild(card);
+
+      const showChapterBtn = bottomHint.querySelector(".show-chapter-button");
+      if (showChapterBtn) {
+        showChapterBtn.addEventListener("click", () => {
+          const contentEl = card.querySelector(".chapter-content");
+          if (!contentEl) return;
+
+          if (showChapterBtn.textContent.trim() === "Show chapter") {
+            // First click: show full chapter
+            expandVerseCardToChapter(card, selection);
+            showChapterBtn.textContent = "Hide chapter";
+          } else {
+            // Second click: go back to single verse
+            contentEl.innerHTML = "";
+
+            const pSingle = document.createElement("p");
+            pSingle.className = "verse";
+
+            const supSingle = document.createElement("span");
+            supSingle.className = "verse-number";
+            supSingle.textContent = verseNumber;
+
+            const textNodeSingle = document.createTextNode(verseText);
+
+            pSingle.appendChild(supSingle);
+            pSingle.appendChild(textNodeSingle);
+            contentEl.appendChild(pSingle);
+
+            showChapterBtn.textContent = "Show chapter";
+          }
+        });
+      }
+    }
+
+    // --- SCROLL HANDLER ---
+
+    function handleScroll() {
+      if (isLoading) return;
+
+      const scrollPosition = window.innerHeight + window.scrollY;
+      const bottom = document.body.offsetHeight - 200;
+
+      if (scrollPosition >= bottom) {
+        isLoading = true;
+        if (mode === "chapters") {
+          appendRandomChapterCard();
+        } else {
+          appendRandomVerseCard();
+        }
+        setTimeout(() => {
+          isLoading = false;
+        }, 300);
+      }
+    }
+
+    // --- LIGHT MODE ---
+
+    function applyLightModeFromStorage() {
+      const saved = localStorage.getItem("lightMode");
+      if (saved === "true") {
+        document.body.classList.add("light-mode");
+        lightModeButton.textContent = "Toggle dark mode";
+      } else {
+        document.body.classList.remove("light-mode");
+        lightModeButton.textContent = "Toggle light mode";
+      }
+    }
+
+    lightModeButton.addEventListener("click", () => {
+      const isLight = document.body.classList.contains("light-mode");
+      if (isLight) {
+        document.body.classList.remove("light-mode");
+        localStorage.setItem("lightMode", "false");
+        lightModeButton.textContent = "Toggle light mode";
+      } else {
+        document.body.classList.add("light-mode");
+        localStorage.setItem("lightMode", "true");
+        lightModeButton.textContent = "Toggle dark mode";
+      }
+    });
+
+    // --- MODE TOGGLE (CHAPTER / VERSE) ---
+
+    function updateModeButtonLabel() {
+      modeToggleButton.textContent =
+        mode === "chapters"
+          ? "Switch to Random Verses"
+          : "Switch to Random Chapters";
+    }
+
+    function updateHeaderTitle() {
+      const titleEl = document.getElementById("headerTitle");
+      titleEl.textContent =
+        mode === "chapters"
+          ? "Bible Chapter Scroll"
+          : "Bible Verse Scroll";
+    }
+
+    modeToggleButton.addEventListener("click", () => {
+      mode = mode === "chapters" ? "verses" : "chapters";
+      localStorage.setItem("mode", mode);
+      updateModeButtonLabel();
+      updateHeaderTitle();
+
+      cardsContainer.innerHTML = "";
+      lastChapterKey = null;
+      lastVerseKey = null;
+      window.scrollTo(0, 0);
+
+      if (mode === "chapters") {
+        appendRandomChapterCard();
+        appendRandomChapterCard();
+      } else {
+        for (let i = 0; i < 10; i++) {
+          appendRandomVerseCard();
+        }
+      }
+    });
+
+    // --- FILTER BUTTONS ---
+
+    ntOnlyButton.addEventListener("click", () => {
+      const ntInData = allBooks.filter(b => newTestamentBooks.includes(b));
+      if (ntInData.length > 0) {
+        setBookSelection(ntInData);
+      }
+    });
+
+    filterToggle.addEventListener("click", () => {
+      bookFilter.classList.toggle("open");
+      filterToggle.textContent = bookFilter.classList.contains("open")
+        ? "Book filter ▴"
+        : "Book filter ▾";
+    });
+
+    selectAllBtn.addEventListener("click", () => {
+      setBookSelection(allBooks);
+    });
+
+    selectNoneBtn.addEventListener("click", () => {
+      setBookSelection([]);
+    });
+
+    // --- INIT ---
+
+    function restoreBookSelection() {
+      const saved = localStorage.getItem("selectedBooks");
+      if (saved) {
+        try {
+          const arr = JSON.parse(saved);
+          if (Array.isArray(arr)) {
+            const valid = arr.filter(b => allBooks.includes(b));
+            setBookSelection(valid);
+            return;
+          }
+        } catch (e) {}
+      }
+      setBookSelection(allBooks);
+    }
+
+    async function init() {
+      applyLightModeFromStorage();
+      updateModeButtonLabel();
+      updateHeaderTitle();
+
+      const versionSelect = document.getElementById("versionSelect");
+      const initialVersion = getSavedVersion();
+
+      if (versionSelect) {
+        const options = Array.from(versionSelect.options);
+        if (options.some(opt => opt.value === initialVersion)) {
+          versionSelect.value = initialVersion;
+        }
+
+        versionSelect.addEventListener("change", async () => {
+          const newVersion = versionSelect.value;
+          localStorage.setItem("bibleVersion", newVersion);
+
+          cardsContainer.innerHTML = "";
+          lastChapterKey = null;
+          lastVerseKey = null;
+
+          await loadBibleData(newVersion);
+          buildBookFilterUI();
+          restoreBookSelection();
+
+          window.scrollTo(0, 0);
+
+          if (mode === "chapters") {
+            appendRandomChapterCard();
+            appendRandomChapterCard();
+          } else {
+            for (let i = 0; i < 10; i++) {
+              appendRandomVerseCard();
+            }
+          }
+        });
+      }
+
+      await loadBibleData(initialVersion);
+      buildBookFilterUI();
+      restoreBookSelection();
+
+      if (mode === "chapters") {
+        appendRandomChapterCard();
+        appendRandomChapterCard();
+      } else {
+        for (let i = 0; i < 10; i++) {
+          appendRandomVerseCard();
+        }
+      }
+
+      window.addEventListener("scroll", handleScroll);
+    }
+
+    init();
+  </script>
+</body>
+</html>

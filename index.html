@@ -329,6 +329,7 @@
           <option value="NET">NET</option>
           <option value="NIV">NIV</option>
           <option value="NKJV">NKJV</option>
+          <option value="NRSV">NRSV</option>
         </select>
         <button id="filterToggle" class="filter-toggle">
           Book filter ▾
@@ -363,12 +364,13 @@
   <script type="module">
     // Version JSON endpoints
     const versionUrls = {
-      ESV: "https://raw.githubusercontent.com/jadenzaleski/bible-translations/master/ESV/ESV_bible.json",
-      KJV: "https://raw.githubusercontent.com/jadenzaleski/bible-translations/master/KJV/KJV_bible.json",
-      NASB: "https://raw.githubusercontent.com/jadenzaleski/bible-translations/master/NASB/NASB_bible.json",
-      NET: "https://raw.githubusercontent.com/jadenzaleski/bible-translations/master/NET/NET_bible.json",
-      NIV: "https://raw.githubusercontent.com/jadenzaleski/bible-translations/master/NIV/NIV_bible.json",
-      NKJV: "https://raw.githubusercontent.com/jadenzaleski/bible-translations/master/NKJV/NKJV_bible.json"
+      ESV: "./ESV_bible.json",
+      KJV: "./KJV_bible.json",
+      NASB: "./NASB_bible.json",
+      NET: "./NET_bible.json",
+      NIV: "./NIV_bible.json",
+      NKJV: "./NKJV_bible.json",
+      NRSV: "./NRSV_bible.json"
     };
 
     function getSavedVersion() {
